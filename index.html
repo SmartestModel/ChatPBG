@@ -91,6 +91,7 @@
             display: none;
             flex-direction: column;
             cursor: pointer;
+            z-index: 1001;  /* ADD THIS LINE */
         }
 
         .mobile-menu span {
@@ -100,6 +101,81 @@
             margin: 3px 0;
             transition: 0.3s;
         }
+        /* Mobile menu animation */
+.mobile-menu.active span:nth-child(1) {
+    transform: rotate(-45deg) translate(-5px, 6px);
+}
+
+.mobile-menu.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.mobile-menu.active span:nth-child(3) {
+    transform: rotate(45deg) translate(-5px, -6px);
+}
+
+/* Mobile sidebar */
+.mobile-sidebar {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 300px;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    z-index: 999;
+    transition: right 0.3s ease;
+    padding: 80px 2rem 2rem;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-sidebar.active {
+    right: 0;
+}
+
+.mobile-sidebar ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.mobile-sidebar ul li a {
+    text-decoration: none;
+    color: #000;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+.mobile-sidebar ul li a:hover {
+    color: #6e6a6a;
+}
+
+.mobile-sidebar .cta-button {
+    margin-top: 2rem;
+    display: inline-block;
+    text-align: center;
+}
+
+/* Overlay */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
 
         /* Hero Section */
         .hero {
@@ -508,6 +584,11 @@
             .section-header h2 {
                 font-size: 2rem;
             }
+
+            .mobile-sidebar {
+                width: 280px;
+                right: -280px;
+            }
         }
 
         /* Clean animations */
@@ -544,6 +625,8 @@
     </style>
 </head>
 <body>
+    <!-- Overlay for mobile menu -->
+<div class="overlay" id="overlay"></div>
     <!-- Header -->
     <header class="header">
         <nav class="nav">
@@ -559,13 +642,24 @@
                 <li><a href="#footer">Contact</a></li>
                 <li><a href="#" class="cta-button">Get Started</a></li>
             </ul>
-            <div class="mobile-menu">
+            <div class="mobile-menu" id="mobileMenu">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
         </nav>
     </header>
+
+    <!-- Mobile Sidebar -->
+<div class="mobile-sidebar" id="mobileSidebar">
+    <ul>
+        <li><a href="#hero">Home</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#footer">About</a></li>
+        <li><a href="#footer">Contact</a></li>
+    </ul>
+    <a href="#" class="cta-button">Get Started</a>
+</div>
 
     <!-- Hero Section -->
     <section class="hero" id="hero">
@@ -761,12 +855,48 @@ You can also track your progress daily and unlock many more tools to stay on the
         });
 
         // Mobile menu toggle
-        const mobileMenu = document.querySelector('.mobile-menu');
-        const navLinks = document.querySelector('.nav-links');
-        
-        mobileMenu.addEventListener('click', () => {
-            navLinks.style.display = navLinks.style.display === 'flex' ? 'none' : 'flex';
-        });
+       // Mobile menu functionality
+const mobileMenu = document.getElementById('mobileMenu');
+const mobileSidebar = document.getElementById('mobileSidebar');
+const overlay = document.getElementById('overlay');
+
+function toggleMobileMenu() {
+    mobileMenu.classList.toggle('active');
+    mobileSidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+    
+    // Prevent body scroll when menu is open
+    if (mobileSidebar.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = '';
+    }
+}
+
+function closeMobileMenu() {
+    mobileMenu.classList.remove('active');
+    mobileSidebar.classList.remove('active');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+}
+
+// Mobile menu toggle
+mobileMenu.addEventListener('click', toggleMobileMenu);
+
+// Close menu when clicking overlay
+overlay.addEventListener('click', closeMobileMenu);
+
+// Close menu when clicking on sidebar links
+document.querySelectorAll('.mobile-sidebar a').forEach(link => {
+    link.addEventListener('click', closeMobileMenu);
+});
+
+// Close menu on escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mobileSidebar.classList.contains('active')) {
+        closeMobileMenu();
+    }
+});
 
         // Intersection Observer for smooth animations
         const observerOptions = {
